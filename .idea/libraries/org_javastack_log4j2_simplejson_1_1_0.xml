@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="org.javastack:log4j2-simplejson:1.1.0" type="repository">
+    <properties maven-id="org.javastack:log4j2-simplejson:1.1.0" />
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/javastack/log4j2-simplejson/1.1.0/log4j2-simplejson-1.1.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
