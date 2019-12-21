@@ -1,6 +1,7 @@
 package World;
 
 import Entities.Animal.Animal;
+import World.JungleMap.JungleMap;
 
 import static java.lang.System.out;
 
@@ -12,17 +13,24 @@ public class World {
 
             MapVisualizer2 visualizer = new MapVisualizer2(map);
             visualizer.visualize();
-            for(int  i = 0 ; i < 1000 ; i ++){
+            int sleepTime = mapInitializer.getSleepTime();
+            int simulationSteps = mapInitializer.getSimulationSteps();
+            int max = Math.max(map.params.width, map.params.height);
+
+            Thread.sleep(max * max / 5);
+
+            for(int  i = 0 ; i < simulationSteps ; i ++){
                 map.nextTurn();
-                visualizer.visualize();
-//                for(int j = 0 ; j < map.params.mapUR.x)
-                Thread.sleep(50);
-//                double avg = 0;
-//                for(Animal animal : map.animals)
-//                    avg += animal.getEnergy();
-//                out.println("Sum: "+avg+ " Avg: "+ avg/map.animals.size() + " animals: " + map.animals.size());
+                Thread.sleep(sleepTime);
+                if(i % (simulationSteps / 25) == 0)
+                    out.println("Day " + i + ": "+map.getAnimals().size() + " animals");
             }
-            out.println(map.animals.size());
+            out.println("Day " + (simulationSteps - 1) + ": "+map.getAnimals().size() + " animals");
+            JSONWriter jsonWriter = new JSONWriter();
+            for(Animal survivor : map.getAnimals()){
+                jsonWriter.writeLn(survivor.getGenome().toString());
+            }
+            jsonWriter.save();
 
         }catch(IllegalArgumentException ex) {
             System.out.println(ex);

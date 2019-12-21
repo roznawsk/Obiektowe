@@ -1,6 +1,6 @@
 package Entities.Animal;
 
-import Basics.MapDirection;
+import Utiity.MapDirection;
 
 import java.util.ArrayList;
 import java.util.Collections;

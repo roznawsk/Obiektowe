@@ -1,14 +1,18 @@
-package World;
+package World.JungleMap;
 
-import Basics.Vector2d;
+import Utiity.Vector2d;
 import Entities.Animal.Animal;
+import World.IPlantObserver;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 
-public class PlantEater {
-    HashSet<Vector2d> processed = new HashSet<>();
-    JungleMap map;
+public class PlantEater implements IPlantObserver {
+    private HashSet<Vector2d> processed = new HashSet<>();
+    private JungleMap map;
+
+    private ArrayList<IPlantObserver> observers = new ArrayList<>();
 
     public PlantEater(JungleMap map){
         this.map = map;
@@ -43,5 +47,16 @@ public class PlantEater {
             }
         }
         return sameEnergy;
+    }
+
+    @Override
+    public void existenceUpdate(Vector2d position){
+        for(IPlantObserver observer : observers){
+            observer.existenceUpdate(position);
+        }
+    }
+
+    public void addObserver(IPlantObserver observer){
+        observers.add(observer);
     }
 }

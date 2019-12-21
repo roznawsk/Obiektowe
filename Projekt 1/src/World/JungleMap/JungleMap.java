@@ -1,16 +1,16 @@
-package World;
+package World.JungleMap;
 
-import Entities.Animal.AnimalAttributes;
-import Entities.Animal.Genome;
-import Basics.MapDirection;
-import Basics.MapParams;
-import Basics.Vector2d;
+import Utiity.MapParams;
+import Utiity.Vector2d;
 import Entities.Animal.Animal;
 import Entities.Plant;
+import World.IAnimalObserver;
+import World.IPlantObserver;
+import World.MapInitializer;
 
 import java.util.*;
 
-public class JungleMap implements IWorldObserver{
+public class JungleMap implements IAnimalObserver {
 
     public final MapParams params;
 
@@ -56,15 +56,11 @@ public class JungleMap implements IWorldObserver{
     }
 
     public boolean place(Animal animal){
-        if(!animal.getPosition().precedes(params.mapUR) &&
-                !animal.getPosition().follows(params.mapLL)) {
+        if(!animal.getPosition().precedes(params.mapUR) && !animal.getPosition().follows(params.mapLL)) {
             throw new IllegalArgumentException("Field "+animal.getPosition()+" out of map!");
         }
-//        System.out.println();
-//        System.out.println(animal.getPosition());
         AnimalSet animalsAt = animalMap.get(animal.getPosition());
         animalsAt.add(animal);
-        animalMap.put(animal.getPosition(), animalsAt);   //unnecessary after changes
         animals.add(animal);
         return true;
     }
@@ -92,11 +88,15 @@ public class JungleMap implements IWorldObserver{
     @Override
     public void positionChanged(Animal animal, Vector2d oldPos) {
         if(animal.getEnergy() <= 0){
-//            System.out.println(animal.getPosition() + "  " + oldPos);
             remove(animal);
             return;
         }
         animalMap.get(oldPos).remove(animal);
         animalMap.get(animal.getPosition()).add(animal);
+    }
+
+    public void addObserver(IPlantObserver observer){
+        plantEater.addObserver(observer);
+        plantGenerator.addObserver(observer);
     }
 }

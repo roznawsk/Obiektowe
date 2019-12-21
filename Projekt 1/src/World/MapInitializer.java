@@ -1,11 +1,12 @@
 package World;
 
-import Basics.AnimalParams;
+import Utiity.AnimalParams;
 import Entities.Animal.AnimalAttributes;
-import Basics.MapDirection;
-import Basics.MapParams;
-import Basics.Vector2d;
+import Utiity.MapDirection;
+import Utiity.MapParams;
+import Utiity.Vector2d;
 import Entities.Animal.Animal;
+import World.JungleMap.AnimalSet;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -18,7 +19,8 @@ public class MapInitializer {
     JSONObject parameters = (JSONObject) new JSONParser().parse(new FileReader("parameters.json"));
 
     private int initialAnimalCount = ((Long)parameters.get("initialAnimalCount")).intValue();
-    private Double jungleRatio = (Double)parameters.get("jungleRatio");
+    private Double jungleToSavannaRatio = (Double)parameters.get("jungleRatio");
+    private Double jungleRatio = jungleToSavannaRatio / (jungleToSavannaRatio + 1);
 
 
     private int w = ((Long)parameters.get("width")).intValue();
@@ -30,6 +32,22 @@ public class MapInitializer {
     private int centerY = h / 2 + getMapLL().y - 1;
 
     public MapInitializer() throws IOException, ParseException {
+        if(jungleToSavannaRatio <= 0)
+            throw new IllegalArgumentException("JungleRatio must be greater than 0");
+        if(w <= 0 || h <= 0)
+            throw  new IllegalArgumentException("Both width and height must be greater than 0");
+        if(initialAnimalCount < 0)
+            throw new IllegalArgumentException("InitialAnimalCount must be greater than 0");
+        if(getStartEnergy() <= 0)
+            throw new IllegalArgumentException("StartEnergy must be greater than 0");
+    }
+
+    public int getSimulationSteps(){
+        return ((Long)parameters.get("simulationSteps")).intValue();
+    }
+
+    public int getSleepTime(){
+        return ((Long)parameters.get("simulationStepWaitMs")).intValue();
     }
 
     public MapParams getParams(){

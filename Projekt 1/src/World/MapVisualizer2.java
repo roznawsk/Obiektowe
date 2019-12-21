@@ -1,14 +1,14 @@
 package World;
-import Basics.MapParams;
-import Basics.Vector2d;
+import Utiity.Vector2d;
 import Entities.Animal.Animal;
+import World.JungleMap.JungleMap;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Hashtable;
 
 
-public class MapVisualizer2 extends JFrame implements IWorldObserver{
+public class MapVisualizer2 extends JFrame implements IAnimalObserver, IPlantObserver{
     private JungleMap map;
     private JButton startSim;
     private JPanel interiorRepresentation;
@@ -16,15 +16,15 @@ public class MapVisualizer2 extends JFrame implements IWorldObserver{
     private int fontSize;
 
     public MapVisualizer2(JungleMap map) {
-        this.map = map; //check if its copy or not
+        this.map = map;
         setTitle("World simulation");
         setSize(1000, 500);
         getContentPane().setBackground(new Color(0x00002F));
-//        setLayout(new GridBagLayout());
-        this.fontSize = (int) (65 / Math.sqrt(Math.max(map.params.height, map.params.width)));
+        this.fontSize = (int) (80 / Math.sqrt(Math.max(map.params.height, map.params.width)));
         initInterior();
-        for(Animal animal : map.animals)
+        for(Animal animal : map.getAnimals())
             animal.addObserver(this);
+        map.addObserver(this);
 
     }
 
@@ -35,7 +35,6 @@ public class MapVisualizer2 extends JFrame implements IWorldObserver{
         for(int i = map.params.mapUR.y ; i >= map.params.mapLL.y ; i--) {
             for (int j = map.params.mapLL.x; j <= map.params.mapUR.x; j++) {
                 JLabel l = new JLabel(drawObject(new Vector2d(j, i)));
-//                JLabel l = new JLabel(i + "," + j);
                 l.setBorder(null);
                 l.setForeground(new Color(0x00D0D2));
                 l.setFont(new Font("Unicode", Font.PLAIN, fontSize));
@@ -53,19 +52,6 @@ public class MapVisualizer2 extends JFrame implements IWorldObserver{
         return " ";
     }
 
-    private JComponent getHeader(){
-        startSim = new JButton();
-        startSim.setBounds(50, 20, 50, 20);
-        startSim.setText("Start simulation");
-        startSim.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        JPanel header = new JPanel();
-        header.setLayout(new GridBagLayout());
-        header.add(startSim);
-        return startSim;
-    }
-
-
     public void visualize(){
         this.getContentPane().removeAll();
         initInterior();
@@ -79,6 +65,12 @@ public class MapVisualizer2 extends JFrame implements IWorldObserver{
         interior.get(element.getPosition()).setText(drawObject(element.getPosition()));
 //        System.out.println("PC from " + oldPos + " to " + element.getPosition());
         interiorRepresentation.repaint();
-        return;
+    }
+
+    @Override
+    public void existenceUpdate(Vector2d position) {
+        interior.get(position).setText(drawObject(position));
+//        System.out.println("PC from " + oldPos + " to " + element.getPosition());
+        interiorRepresentation.repaint();
     }
 }

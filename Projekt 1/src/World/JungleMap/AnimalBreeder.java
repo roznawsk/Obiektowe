@@ -1,10 +1,8 @@
-package World;
+package World.JungleMap;
 
-import Basics.MapDirection;
-import Basics.Vector2d;
+import Utiity.MapDirection;
+import Utiity.Vector2d;
 import Entities.Animal.Animal;
-import Entities.Animal.AnimalAttributes;
-import Entities.Animal.Genome;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -31,11 +29,9 @@ public class AnimalBreeder {
                 if (topTwo.size() == 2) {
                     Vector2d availablePlace = freeSpaceNear(currentPosition);
                     if(availablePlace != null){
-//                        System.out.println("Animals before "+ topTwo.get(0).getEnergy() + "," + topTwo.get(1).getEnergy());
                         Animal baby = new Animal(topTwo.get(0), topTwo.get(1), availablePlace);
                         topTwo.get(0).drainBreedingEnergy();
                         topTwo.get(1).drainBreedingEnergy();
-//                        System.out.println("After"+ topTwo.get(0).getEnergy() + "," + topTwo.get(1).getEnergy()+" baby: "+ baby.getEnergy());
                         toAdd.add(baby);
                     }
                 }

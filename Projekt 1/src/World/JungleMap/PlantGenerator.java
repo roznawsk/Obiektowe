@@ -1,14 +1,17 @@
-package World;
+package World.JungleMap;
 
-import Basics.Vector2d;
+import Utiity.Vector2d;
 import Entities.Plant;
+import World.IPlantObserver;
 
 import java.util.ArrayList;
 import java.util.Random;
 
-public class PlantGenerator {
+public class PlantGenerator implements IPlantObserver {
     private Random r =  new Random();
     private JungleMap map;
+
+    private ArrayList<IPlantObserver> observers = new ArrayList<>();
 
     public PlantGenerator(JungleMap map){
         this.map = map;
@@ -16,11 +19,15 @@ public class PlantGenerator {
 
     public void addPlants(){
         Plant p1 = getJunglePlant();
-        if(p1 != null)
+        if(p1 != null){
             map.plantMap.put(p1.getPosition(), p1);
+            existenceUpdate(p1.getPosition());
+        }
         p1 = getMapPlant();
-        if(p1 != null)
+        if(p1 != null){
             map.plantMap.put(p1.getPosition(), p1);
+            existenceUpdate(p1.getPosition());
+        }
     }
 
     private Plant getJunglePlant(){
@@ -51,4 +58,16 @@ public class PlantGenerator {
         }
         return null;
     }
+
+    @Override
+    public void existenceUpdate(Vector2d position){
+        for(IPlantObserver observer : observers){
+            observer.existenceUpdate(position);
+        }
+    }
+
+    public void addObserver(IPlantObserver observer){
+        observers.add(observer);
+    }
+
 }

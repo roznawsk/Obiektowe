@@ -1,6 +1,6 @@
 package Entities;
 
-import Basics.Vector2d;
+import Utiity.Vector2d;
 
 public class Plant{
 

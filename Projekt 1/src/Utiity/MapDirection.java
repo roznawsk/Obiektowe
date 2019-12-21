@@ -1,4 +1,4 @@
-package Basics;
+package Utiity;
 
 import Entities.Animal.Genome;
 
@@ -38,9 +38,6 @@ public enum MapDirection {
     public static MapDirection random(){
         Random r = new Random();
         return MapDirection.values()[r.nextInt(8)];
-    }
-    public static MapDirection random(Genome genome){
-        return MapDirection.N;
     }
     public Vector2d toUnitVector(){
         switch(this){

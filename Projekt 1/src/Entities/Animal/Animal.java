@@ -1,17 +1,17 @@
 package Entities.Animal;
 
-import Basics.MapDirection;
-import Basics.Vector2d;
-import World.IWorldObserver;
-import World.JungleMap;
+import Utiity.MapDirection;
+import Utiity.Vector2d;
+import World.IAnimalObserver;
+import World.JungleMap.JungleMap;
 
 import java.util.ArrayList;
 
-public class Animal implements IWorldObserver{
+public class Animal implements IAnimalObserver {
 
     private JungleMap map;
     private AnimalAttributes attribs;
-    private ArrayList<IWorldObserver> observers = new ArrayList<>();
+    private ArrayList<IAnimalObserver> observers = new ArrayList<>();
 
     //Constructors
     public Animal(AnimalAttributes animalParameters){
@@ -43,7 +43,7 @@ public class Animal implements IWorldObserver{
         return attribs.getPosition();
     }
 
-    public Entities.Animal.Genome getGenome() {
+    public Genome getGenome() {
         return attribs.getGenome();
     }
 
@@ -69,9 +69,7 @@ public class Animal implements IWorldObserver{
         Vector2d oldPosition = new Vector2d(getPosition());
         Vector2d newPosition = attribs.getPosition().add(attribs.getDirection().toUnitVector());
         newPosition = map.params.inMapVector(newPosition);
-//        System.out.println("C1: " + observers.size() + " " + getEnergy());
         attribs.drainMoveEnergy();
-//        System.out.println("C2: " + observers.size() + " " + getEnergy());
         if(attribs.getEnergy() <= 0){
             positionChanged(this, oldPosition);
             return;
@@ -81,13 +79,13 @@ public class Animal implements IWorldObserver{
         positionChanged(this, oldPosition);
     }
 
-    public void addObserver(IWorldObserver observer){
+    public void addObserver(IAnimalObserver observer){
         observers.add(observer);
     }
 
     @Override
     public void positionChanged(Animal element, Vector2d oldPos) {
-        for(IWorldObserver observer : observers){
+        for(IAnimalObserver observer : observers){
             observer.positionChanged(element, oldPos);
         }
     }

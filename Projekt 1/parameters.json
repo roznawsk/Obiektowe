@@ -1,9 +1,11 @@
 {
-  "width": 6,
-  "height": 6,
-  "jungleRatio": 0.3,
-  "startEnergy": 20,
+  "width": 50,
+  "height": 50,
+  "jungleRatio": 0.2,
+  "startEnergy": 500,
   "moveEnergy": 1,
-  "plantEnergy": 5,
-  "initialAnimalCount": 4
+  "plantEnergy": 80,
+  "initialAnimalCount": 80,
+  "simulationSteps": 100000,
+  "simulationStepWaitMs": 0
 }

@@ -1,8 +1,8 @@
 package Entities.Animal;
 
-import Basics.AnimalParams;
-import Basics.MapDirection;
-import Basics.Vector2d;
+import Utiity.AnimalParams;
+import Utiity.MapDirection;
+import Utiity.Vector2d;
 
 public class AnimalAttributes {
     private AnimalParams params;

@@ -1,9 +1,11 @@
-package World;
+package World.JungleMap;
 
 import Entities.Animal.Animal;
+import World.World;
+
 import java.util.ArrayList;
 
-class AnimalSet extends ArrayList<Animal> {
+public class AnimalSet extends ArrayList<Animal> {
 
     @Override
     public String toString() {

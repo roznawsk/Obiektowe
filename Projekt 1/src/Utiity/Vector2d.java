@@ -1,4 +1,4 @@
-package Basics;
+package Utiity;
 
 import java.util.Random;
 
