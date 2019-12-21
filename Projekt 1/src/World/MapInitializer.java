@@ -1,6 +1,7 @@
 package World;
 
-import Entities.Animal.AnimalParameters;
+import Basics.AnimalParams;
+import Entities.Animal.AnimalAttributes;
 import Basics.MapDirection;
 import Basics.MapParams;
 import Basics.Vector2d;
@@ -11,71 +12,75 @@ import org.json.simple.parser.ParseException;
 
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedList;
 
 public class MapInitializer {
 
-    MapParams params = new MapParams();
-    protected LinkedList<Animal> initialAnimals = new LinkedList<>();
-    static JSONObject parameters;
+    JSONObject parameters = (JSONObject) new JSONParser().parse(new FileReader("parameters.json"));
 
-    static {
-        try {
-            parameters = (JSONObject) new JSONParser().parse(new FileReader("parameters.json"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
+    private int initialAnimalCount = ((Long)parameters.get("initialAnimalCount")).intValue();
+    private Double jungleRatio = (Double)parameters.get("jungleRatio");
+
+
+    private int w = ((Long)parameters.get("width")).intValue();
+    private int h = ((Long)parameters.get("height")).intValue();
+    private int jungleW = (int) Math.sqrt(jungleRatio * w * h * Math.sqrt( (double) w / h ));
+    private int jungleH = (int) Math.sqrt(jungleRatio * w * h * Math.sqrt( (double) h / w ));
+
+    private int centerX = w / 2 + getMapLL().x - 1;
+    private int centerY = h / 2 + getMapLL().y - 1;
+
+    public MapInitializer() throws IOException, ParseException {
     }
 
-    private static int initialAnimalCount = ((Long)parameters.get("initialAnimals")).intValue();
-    private static Double jungleRatio = (Double)parameters.get("jungleRatio");
-    private static int centerX = MapParams.width / 2 + MapParams.mapLL.x;
-    private static int centerY = MapParams.height / 2 + MapParams.mapLL.y;
-
-    private static int w = MapParams.width;
-    private static int h = MapParams.height;
-    private static int jungleW = (int) Math.sqrt(jungleRatio * w * h * Math.sqrt( (double) w / h ));
-    private static int jungleH = (int) Math.sqrt(jungleRatio * w * h * Math.sqrt( (double) h / w ));
-
-    public static JungleMap getMap(){
-        return new JungleMap(generateRandomAnimals(initialAnimalCount));
+    public MapParams getParams(){
+        return new MapParams(this);
     }
 
-    public static int getWidth(){
-        return ((Long) parameters.get("width")).intValue();
+    public int getWidth(){
+        return w;
     }
 
-    public static int getHeight(){
-        return ((Long) parameters.get("height")).intValue();
+    public int getHeight(){
+        return h;
     }
 
-    public static Vector2d getMapLL(){
+    public Vector2d getMapLL(){
         return new Vector2d(0, 0);
     }
 
-    public static Vector2d getMapUR(){
-        int mapURx = MapParams.mapLL.x + MapParams.width;
-        int mapURy = MapParams.mapLL.y + MapParams.height;
+    public Vector2d getMapUR(){
+        int mapURx = getMapLL().x + w - 1;
+        int mapURy = getMapLL().y + h - 1;
         return new Vector2d(mapURx, mapURy);
     }
 
-    public static Vector2d getJungleLL(){
+    public Vector2d getJungleLL(){
         return new Vector2d(centerX - jungleW / 2, centerY - jungleH / 2);
     }
 
-    public static Vector2d getJungleUR(){
+    public Vector2d getJungleUR(){
         return new Vector2d(centerX + jungleW / 2, centerY + jungleH / 2);
     }
 
-    private static AnimalSet generateRandomAnimals(int number){
+    public int getStartEnergy(){
+        return ((Long)parameters.get("startEnergy")).intValue();
+    }
+
+    public int getPlantEnergy(){
+        return ((Long)parameters.get("plantEnergy")).intValue();
+    }
+
+    public int getMoveEnergy(){
+        return ((Long)parameters.get("moveEnergy")).intValue();
+    }
+
+    public AnimalSet generateRandomAnimals(){
         AnimalSet initialAnimals = new AnimalSet();
-        while(number-- > 0){
-            Vector2d initialPosition = Vector2d.randomBetween(MapParams.mapLL, MapParams.mapUR);
+        AnimalParams animalParams = new AnimalParams(this);
+        for(int i = 0 ; i < initialAnimalCount ; i ++){
+            Vector2d initialPosition = Vector2d.randomBetween(getMapLL(), getMapUR());
             MapDirection initialDirection = MapDirection.random();
-            initialAnimals.add(new Animal(new AnimalParameters(initialPosition, initialDirection, AnimalParameters.getStartEnergy())));
+            initialAnimals.add(new Animal(new AnimalAttributes(animalParams, initialPosition)));
         }
         return initialAnimals;
     }

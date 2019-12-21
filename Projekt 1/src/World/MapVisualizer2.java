@@ -9,11 +9,11 @@ import java.util.Hashtable;
 
 
 public class MapVisualizer2 extends JFrame implements IWorldObserver{
-    JungleMap map;
-    JButton startSim;
-    JPanel interiorRepresentation;
-    Hashtable<Vector2d, JLabel> interior = new Hashtable<>();
-    int fontSize;
+    private JungleMap map;
+    private JButton startSim;
+    private JPanel interiorRepresentation;
+    private Hashtable<Vector2d, JLabel> interior = new Hashtable<>();
+    private int fontSize;
 
     public MapVisualizer2(JungleMap map) {
         this.map = map; //check if its copy or not
@@ -21,7 +21,7 @@ public class MapVisualizer2 extends JFrame implements IWorldObserver{
         setSize(1000, 500);
         getContentPane().setBackground(new Color(0x00002F));
 //        setLayout(new GridBagLayout());
-        this.fontSize = (int) (65 / Math.sqrt(Math.max(MapParams.height, MapParams.width)));
+        this.fontSize = (int) (65 / Math.sqrt(Math.max(map.params.height, map.params.width)));
         initInterior();
         for(Animal animal : map.animals)
             animal.addObserver(this);
@@ -30,15 +30,16 @@ public class MapVisualizer2 extends JFrame implements IWorldObserver{
 
     private void initInterior(){
         interiorRepresentation = new JPanel();
-        interiorRepresentation.setLayout(new GridLayout(MapParams.height , MapParams.width));
+        interiorRepresentation.setLayout(new GridLayout(map.params.height , map.params.width ));
 
-        for(int i = MapParams.mapLL.x ; i <= MapParams.mapUR.x ; i++) {
-            for (int j = MapParams.mapLL.y; j <= MapParams.mapUR.y; j++) {
-                JLabel l = new JLabel(drawObject(new Vector2d(i, j)));
+        for(int i = map.params.mapUR.y ; i >= map.params.mapLL.y ; i--) {
+            for (int j = map.params.mapLL.x; j <= map.params.mapUR.x; j++) {
+                JLabel l = new JLabel(drawObject(new Vector2d(j, i)));
+//                JLabel l = new JLabel(i + "," + j);
                 l.setBorder(null);
                 l.setForeground(new Color(0x00D0D2));
                 l.setFont(new Font("Unicode", Font.PLAIN, fontSize));
-                interior.put(new Vector2d(i, j), l);
+                interior.put(new Vector2d(j, i), l);
                 interiorRepresentation.add(l);
             }
         }
@@ -76,6 +77,7 @@ public class MapVisualizer2 extends JFrame implements IWorldObserver{
     public void positionChanged(Animal element, Vector2d oldPos) {
         interior.get(oldPos).setText(drawObject(oldPos));
         interior.get(element.getPosition()).setText(drawObject(element.getPosition()));
+//        System.out.println("PC from " + oldPos + " to " + element.getPosition());
         interiorRepresentation.repaint();
         return;
     }

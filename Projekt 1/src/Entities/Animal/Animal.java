@@ -1,6 +1,6 @@
 package Entities.Animal;
 
-import Basics.MapParams;
+import Basics.MapDirection;
 import Basics.Vector2d;
 import World.IWorldObserver;
 import World.JungleMap;
@@ -10,19 +10,27 @@ import java.util.ArrayList;
 public class Animal implements IWorldObserver{
 
     private JungleMap map;
-    private AnimalParameters params;
+    private AnimalAttributes attribs;
     private ArrayList<IWorldObserver> observers = new ArrayList<>();
 
     //Constructors
-    public Animal(AnimalParameters animalParameters){
+    public Animal(AnimalAttributes animalParameters){
         this(null, animalParameters);
     }
 
-    public Animal(JungleMap map, AnimalParameters animalParameters){
+    public Animal(JungleMap map, AnimalAttributes animalParameters){
         this.map = map;
         if(map != null)
             addObserver(map);
-        this.params = animalParameters;
+        this.attribs = animalParameters;
+    }
+
+    public Animal(Animal parent1, Animal parent2, Vector2d newPosition){
+        this.map = parent1.map;
+        this.observers = parent1.observers;
+        double newEnergy = (0.25 * (parent1.getEnergy() + parent2.getEnergy()));
+        Genome newGenome = new Genome(parent1.getGenome(), parent2.getGenome());
+        this.attribs = new AnimalAttributes(parent1.attribs.getParams(), newPosition, MapDirection.random(), newEnergy, newGenome);
     }
 
     //toString
@@ -32,14 +40,14 @@ public class Animal implements IWorldObserver{
 
     //Getters
     public Vector2d getPosition() {
-        return params.getPosition();
+        return attribs.getPosition();
     }
 
     public Entities.Animal.Genome getGenome() {
-        return params.getGenome();
+        return attribs.getGenome();
     }
 
-    public int getEnergy(){ return params.getEnergy(); }
+    public double getEnergy(){ return attribs.getEnergy(); }
 
     //Setters
     public void setMap(JungleMap map) {
@@ -47,21 +55,29 @@ public class Animal implements IWorldObserver{
         addObserver(map);
     }
 
-    public void changeEnergy(int gain){
-        this.params.changeEnergy(gain);
+    public void gainEnergy(int num){attribs.gainPlantEnergy(num);}
+
+    public boolean canBreed(){
+        return attribs.canBreed();
+    }
+
+    public void drainBreedingEnergy(){
+        attribs.drainBreedingEnergy();
     }
 
     public void moveForward(){
         Vector2d oldPosition = new Vector2d(getPosition());
-        Vector2d newPosition = params.getPosition().add(params.getDirection().toUnitVector());
-        newPosition = MapParams.inMapVector(newPosition);
-        params.changeEnergy(-AnimalParameters.getMoveEnergy());
-        if(params.getEnergy() <= 0){
+        Vector2d newPosition = attribs.getPosition().add(attribs.getDirection().toUnitVector());
+        newPosition = map.params.inMapVector(newPosition);
+//        System.out.println("C1: " + observers.size() + " " + getEnergy());
+        attribs.drainMoveEnergy();
+//        System.out.println("C2: " + observers.size() + " " + getEnergy());
+        if(attribs.getEnergy() <= 0){
             positionChanged(this, oldPosition);
             return;
         }
-        params.setPosition(newPosition);
-        params.rotate();
+        attribs.setPosition(newPosition);
+        attribs.rotate();
         positionChanged(this, oldPosition);
     }
 

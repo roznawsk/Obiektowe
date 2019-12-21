@@ -21,6 +21,11 @@ public class Genome {
         Collections.sort(genome);
     }
 
+    public MapDirection randomDirection(){
+        Random r = new Random();
+        return genome.get(r.nextInt(32));
+    }
+
     public Genome(Genome g){
         this.genome = new ArrayList<>(g.genome);
     }

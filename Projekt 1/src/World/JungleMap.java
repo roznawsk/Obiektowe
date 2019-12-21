@@ -1,6 +1,6 @@
 package World;
 
-import Entities.Animal.AnimalParameters;
+import Entities.Animal.AnimalAttributes;
 import Entities.Animal.Genome;
 import Basics.MapDirection;
 import Basics.MapParams;
@@ -12,140 +12,40 @@ import java.util.*;
 
 public class JungleMap implements IWorldObserver{
 
+    public final MapParams params;
+
     protected Hashtable<Vector2d, AnimalSet> animalMap = new Hashtable<>();
     protected HashSet<Animal> animals = new HashSet<>();
 
     protected Hashtable<Vector2d, Plant> plantMap = new Hashtable<>();
 
-    public JungleMap(AnimalSet initialAnimals){
-        for(int i = MapParams.mapLL.x ; i <= MapParams.mapUR.x ; i++){
-            for(int j = MapParams.mapLL.y ; j <= MapParams.mapUR.y ; j++){
+    private PlantGenerator plantGenerator = new PlantGenerator(this);
+    private AnimalBreeder animalBreeder = new AnimalBreeder(this);
+    private PlantEater plantEater = new PlantEater(this);
+
+    public HashSet<Animal> getAnimals(){
+        return new HashSet<>(animals);
+    }
+
+    public JungleMap(MapInitializer init){
+        this.params = init.getParams();
+        for(int i = params.mapLL.x ; i <= params.mapUR.x ; i++){
+            for(int j = params.mapLL.y ; j <= params.mapUR.y ; j++){
                 animalMap.put(new Vector2d(i, j), new AnimalSet());
             }
         }
+        AnimalSet initialAnimals = init.generateRandomAnimals();
         for(Animal animal : initialAnimals){
             this.place(animal);
             animal.setMap(this);
         }
-        spawnPlants();
     }
 
     public void nextTurn(){
+        plantGenerator.addPlants();
         run();
-//        System.out.print("Run done,");
-        eatPlants();
-//        System.out.print("Process done,");
-        breed();
-//        System.out.print("Breed done");
-//        System.out.println();
-        spawnPlants();
-    }
-
-    private void eatPlants(){
-        HashSet<Vector2d> processed = new HashSet<>();
-
-        for(Animal animal : animals){
-            if(processed.contains(animal.getPosition()))
-                continue;
-            if(plantMap.containsKey(animal.getPosition())){
-                plantMap.remove(animal.getPosition());
-                int currentEnergy = -1;
-                LinkedList<Animal> sameEnergy = new LinkedList<>();
-                for(Animal nextAnimal : animalMap.get(animal.getPosition())){
-                    if(nextAnimal.getEnergy() > currentEnergy){
-                        sameEnergy.clear();
-                        sameEnergy.add(nextAnimal);
-                        currentEnergy = nextAnimal.getEnergy();
-                    }
-                    else if(nextAnimal.getEnergy() == currentEnergy){
-                        sameEnergy.add(nextAnimal);
-                    }
-                }
-                for(Animal toFeed : sameEnergy){
-                    toFeed.changeEnergy(AnimalParameters.getPlantEnergy()/sameEnergy.size());
-                }
-            }
-        }
-        processed.clear();
-    }
-
-    private void spawnPlants(){
-        Random r = new Random();
-        Vector2d pos = null;
-        //Generate plant outside Jungle
-        for(int i = 0 ; i < 100 ; i++){
-            pos = Vector2d.randomBetween(MapParams.mapLL, MapParams.mapUR);
-            if(!(pos.follows(MapParams.jungleLL) && pos.precedes(MapParams.jungleUR))
-                    && !isOccupied(pos)){
-                break;
-            }
-        }
-        Plant plant;
-        if(pos != null){
-            plant = new Plant(pos);
-            plantMap.put(pos, plant);
-        }
-        ArrayList<Vector2d> availablePositions = new ArrayList<>();
-        for(int x = MapParams.jungleLL.x ; x <= MapParams.jungleUR.x ; x++) {
-            for (int y = MapParams.jungleLL.y; y <= MapParams.jungleUR.y; y++) {
-                if (!isOccupied(new Vector2d(x, y)))
-                    availablePositions.add(new Vector2d(x, y));
-            }
-        }
-        System.out.println(availablePositions.size());
-        if(availablePositions.size() == 0)
-            return;
-        pos = availablePositions.get(r.nextInt(availablePositions.size()));
-        plant = new Plant(pos);
-        plantMap.put(pos, plant);
-    }
-
-    private void breed(){
-        HashSet<Vector2d> processed = new HashSet<>();
-        LinkedList<Animal> toAdd = new LinkedList<Animal>();
-        for(Animal animal : animals){
-            if(processed.contains(animal.getPosition()) || animalMap.get(animal.getPosition()).size() < 2)
-                continue;
-            processed.add(animal.getPosition());
-            animalMap.get(animal.getPosition());
-            Animal animal1 = new Animal(new AnimalParameters(null, null, -1));
-            Animal animal2 = animal1;
-            for(Animal foo : animalMap.get(animal.getPosition())){
-                if(foo.getEnergy() > animal1.getEnergy()) {
-                    animal2 = animal1;
-                    animal1 = foo;
-                }
-                else if(foo.getEnergy() > animal2.getEnergy()){
-                    animal2 = foo;
-                }
-            }
-            Animal baby = createBaby(animal.getPosition(), animal1, animal2, processed);
-            if(baby != null)
-                toAdd.add(baby);
-        }
-        for(Animal animal : toAdd){
-            place(animal);
-        }
-    }
-
-    private Animal createBaby(Vector2d position, Animal par1, Animal par2, HashSet<Vector2d> processed){
-        if(par1.getEnergy() < AnimalParameters.getStartEnergy()/2 || par2.getEnergy() < AnimalParameters.getStartEnergy()/2)
-            return null;
-        ArrayList<Vector2d> moves = new ArrayList<>();
-        for(MapDirection dir : MapDirection.values()){
-            Vector2d newPosition = MapParams.inMapVector(dir.toUnitVector().add(position));
-            if(!isOccupied(newPosition) && !processed.contains(newPosition))
-                moves.add(newPosition);
-        }
-        if(moves.size() == 0)
-            return null;
-        Random r = new Random();
-        Vector2d babyPos = new Vector2d(moves.get(r.nextInt(moves.size())));
-        int babyEnergy = (int) (0.25 * (par1.getEnergy() + par2.getEnergy()) );
-        par1.changeEnergy((int) (-0.25 * par1.getEnergy()));
-        par2.changeEnergy((int) (-0.25 * par2.getEnergy()));
-        return new Animal(this, new AnimalParameters(babyPos, MapDirection.random(), babyEnergy,
-                new Genome(par1.getGenome(), par2.getGenome())));
+        plantEater.eatPlants();
+        animalBreeder.breedAnimals();
     }
 
     public void run(){
@@ -156,8 +56,8 @@ public class JungleMap implements IWorldObserver{
     }
 
     public boolean place(Animal animal){
-        if(!animal.getPosition().precedes(MapParams.mapUR) &&
-                !animal.getPosition().follows(MapParams.mapLL)) {
+        if(!animal.getPosition().precedes(params.mapUR) &&
+                !animal.getPosition().follows(params.mapLL)) {
             throw new IllegalArgumentException("Field "+animal.getPosition()+" out of map!");
         }
 //        System.out.println();
@@ -170,7 +70,7 @@ public class JungleMap implements IWorldObserver{
     }
 
     public void remove(Animal animal){
-        System.out.println(animal.getPosition());
+//        System.out.println(animal.getPosition());
         if(!animalMap.containsKey(animal.getPosition()))
             return;
         AnimalSet animalsAt = animalMap.get(animal.getPosition());
@@ -179,8 +79,8 @@ public class JungleMap implements IWorldObserver{
     }
 
     public boolean isOccupied(Vector2d position){
-        if(!(position.precedes(MapParams.mapUR) && position.follows(MapParams.mapLL))) return false;
-        return(animalMap.get(position) != null || plantMap.get(position) != null);
+        if(!(position.precedes(params.mapUR) && position.follows(params.mapLL))) return false;
+        return animalMap.get(position).size() > 0 || plantMap.get(position) != null;
     }
 
     public Object objectAt(Vector2d position){
@@ -189,15 +89,10 @@ public class JungleMap implements IWorldObserver{
         return plantMap.get(position);
     }
 
-//    @Override
-//    public void remove(IWorldMapElement element) {
-//
-//    }
-
     @Override
     public void positionChanged(Animal animal, Vector2d oldPos) {
         if(animal.getEnergy() <= 0){
-            System.out.println(animal.getPosition() + "  " + oldPos);
+//            System.out.println(animal.getPosition() + "  " + oldPos);
             remove(animal);
             return;
         }
